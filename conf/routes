@@ -13,4 +13,5 @@ GET        /scala/eventSource                  controllers.ScalaEventSourceContr
 GET        /scala/eventSource/liveClock        controllers.ScalaEventSourceController.streamClock()
 
 # Map static resources from the /public folder to the /assets URL path
+GET        /favicon.ico                        controllers.Assets.at(path="/public", file="favicon.ico")
 GET        /assets/*file                       controllers.Assets.at(path="/public", file)
