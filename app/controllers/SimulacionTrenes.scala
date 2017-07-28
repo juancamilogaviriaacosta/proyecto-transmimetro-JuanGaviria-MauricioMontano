@@ -28,7 +28,7 @@ class SimulacionTrenes {
             for (t <- tm.trenes) {
               siguienteParada(tm.estaciones, t)
             }
-            Thread.sleep(2000)
+            Thread.sleep(5000)
           }
         } catch {
           case e: Exception =>
@@ -108,23 +108,6 @@ class SimulacionTrenes {
                 t.pasajeros = t.pasajeros diff t.pasajeros
               }
             }
-            //Thread.sleep(3000);
-          }
-        } catch {
-          case e: Exception =>
-            e.printStackTrace()
-        }
-      }
-    }).start()
-
-    //Hilo para imprimir el estado del sistema
-    new Thread(new Runnable() {
-      override def run(): Unit = {
-        try {
-          while ( {
-            !llegaronTodosLosTrenes(tm.trenes)
-          }) {
-            Thread.sleep(500)
           }
         } catch {
           case e: Exception =>
