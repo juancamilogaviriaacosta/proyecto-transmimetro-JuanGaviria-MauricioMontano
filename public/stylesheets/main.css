@@ -12,6 +12,27 @@ p {
     color: #666;
 }
 
+table {
+    width: 100%;
+}
+table td, table th {
+    padding: 5px;
+}
+table td {
+    text-align: center;
+    vertical-align: middle;
+}
+table th {
+    background-color: #000000;
+    color: white;
+}
+table tr:nth-child(2n) {
+    background-color: white;
+}
+table tr:nth-child(2n+1) {
+    background-color: #e3e3e3;
+}
+
 #clock {
     display: block;
     margin: 50px auto;
@@ -21,7 +42,7 @@ p {
 
 #clock span {
     position: relative;
-    font-size: 18px;
+    font-size: 10px;
     display: inline-block;
     background: #222;
     margin-right: 3px;

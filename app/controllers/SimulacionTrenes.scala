@@ -259,13 +259,17 @@ class SimulacionTrenes {
 
   def imprimir(): String = synchronized {
     var info:String = ""
-    info = "\n\n----------Informe " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + "----------"
+    info = "Informe " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + "<br/><br/>"
+    info = info + "<table> <tr> <th>Estación</th> <th>Pasajeros actual</th> <th>Total ingresos</th> <th>Total salidas</th> </tr>"
     for (tmp <- tm.estaciones) {
-      info = info + "Estacion " + tmp.nombre + ": pasajeros actual " + tmp.pasajeros.size + ", total ingresos: " + tmp.numeroIngresos + ", total salidas: " + tmp.numeroSalidas
+      info = info + "<tr> <td>"+ tmp.nombre +"</td> <td>"+ tmp.pasajeros.size +"</td> <td>"+ tmp.numeroIngresos +"</td> <td>"+ tmp.numeroSalidas +"</td> </tr>"
     }
+    info = info + "</table> <br/> <br/>"
+    info = info + "<table align=center> <tr> <th>Tren</th> <th>Ubicación actual</th> <th>Numero de pasajeros</th> </tr>"
     for (tmp <- tm.trenes) {
-      info = info + "Tren " + tmp.id + " esta en " + tmp.estacionActual.nombre + " con " + tmp.pasajeros.size + " pasajeros"
+      info = info + "<tr> <td>"+ tmp.id +"</td> <td>"+ tmp.estacionActual.nombre +"</td> <td>"+ tmp.pasajeros.size +"</td> </tr>"
     }
+    info = info + "</table>"
     info
   }
 
