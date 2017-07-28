@@ -21,7 +21,7 @@ p {
 
 #clock span {
     position: relative;
-    font-size: 64px;
+    font-size: 18px;
     display: inline-block;
     background: #222;
     margin-right: 3px;

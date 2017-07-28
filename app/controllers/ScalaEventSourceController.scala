@@ -10,8 +10,6 @@ import play.api.mvc._
 class ScalaEventSourceController @Inject()(cc: ControllerComponents) extends AbstractController(cc) with ScalaTicker {
 
   def index() = Action {
-    val st = new SimulacionTrenes
-    st.simular()
     Ok(views.html.scalaeventsource())
   }
 

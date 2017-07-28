@@ -13,9 +13,11 @@ class SimulacionTrenes {
   import java.util.Random
   import java.util.Date
 
+  var tm:Transmimetro = null
+
   def simular(): Unit = {
-    val tm = cargarArchivos
-    
+    cargarArchivos
+
     //Hilo para mover los trenes
     new Thread(new Runnable() {
       override def run(): Unit = {
@@ -28,7 +30,6 @@ class SimulacionTrenes {
             }
             Thread.sleep(2000)
           }
-          imprimir(tm)
         } catch {
           case e: Exception =>
             e.printStackTrace()
@@ -53,7 +54,6 @@ class SimulacionTrenes {
               }
             }
           }
-          imprimir(tm)
         } catch {
           case e: Exception =>
             e.printStackTrace()
@@ -84,7 +84,6 @@ class SimulacionTrenes {
               }
             }
           }
-          imprimir(tm)
         } catch {
           case e: Exception =>
             e.printStackTrace()
@@ -111,7 +110,6 @@ class SimulacionTrenes {
             }
             //Thread.sleep(3000);
           }
-          imprimir(tm)
         } catch {
           case e: Exception =>
             e.printStackTrace()
@@ -126,10 +124,8 @@ class SimulacionTrenes {
           while ( {
             !llegaronTodosLosTrenes(tm.trenes)
           }) {
-            imprimir(tm)
             Thread.sleep(500)
           }
-          imprimir(tm)
         } catch {
           case e: Exception =>
             e.printStackTrace()
@@ -143,7 +139,7 @@ class SimulacionTrenes {
     val f = new File(url.getPath).getParentFile.getParentFile.getParentFile.getParentFile
     val paquete = f.getAbsolutePath.replaceAll("%20", " ") + File.separator + "web" + File.separator + "public" + File.separator + "main"
 
-    val tm = new Transmimetro
+    tm = new Transmimetro
     tm.trenes = List[Tren]()
     tm.estaciones = List[Estacion]()
     tm.pasajeros = List[Pasajero]()
@@ -261,14 +257,16 @@ class SimulacionTrenes {
     }
   }
 
-  def imprimir(tm: Transmimetro): Unit = synchronized {
-    println("\n\n----------Informe " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + "----------")
+  def imprimir(): String = synchronized {
+    var info:String = ""
+    info = "\n\n----------Informe " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + "----------"
     for (tmp <- tm.estaciones) {
-      println("Estacion " + tmp.nombre + ": pasajeros actual " + tmp.pasajeros.size + ", total ingresos: " + tmp.numeroIngresos + ", total salidas: " + tmp.numeroSalidas)
+      info = info + "Estacion " + tmp.nombre + ": pasajeros actual " + tmp.pasajeros.size + ", total ingresos: " + tmp.numeroIngresos + ", total salidas: " + tmp.numeroSalidas
     }
     for (tmp <- tm.trenes) {
-      println("Tren " + tmp.id + " esta en " + tmp.estacionActual.nombre + " con " + tmp.pasajeros.size + " pasajeros")
+      info = info + "Tren " + tmp.id + " esta en " + tmp.estacionActual.nombre + " con " + tmp.pasajeros.size + " pasajeros"
     }
+    info
   }
 
 }

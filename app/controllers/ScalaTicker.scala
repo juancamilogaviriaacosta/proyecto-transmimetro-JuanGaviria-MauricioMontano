@@ -10,10 +10,14 @@ import scala.concurrent.duration._
 
 trait ScalaTicker {
 
+  object instancia {
+    val st:SimulacionTrenes = new SimulacionTrenes
+    st.simular()
+  }
+
   def stringSource: Source[String, _] = {
-    val df: DateTimeFormatter = DateTimeFormatter.ofPattern("dd HH mm ss")
-    val tickSource = Source.tick(0 millis, 100 millis, "TICK")
-    val s = tickSource.map((tick) => df.format(ZonedDateTime.now()) + " texto")
+    val tickSource = Source.tick(0 millis, 1000 millis, "TICK")
+    val s = tickSource.map((tick) => instancia.st.imprimir())
     s
   }
 
