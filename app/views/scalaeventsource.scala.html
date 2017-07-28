@@ -1,6 +1,17 @@
 @main {
     
     <h1>Transmi Metro</h1>
+
+    @helper.form(action = routes.ScalaEventSourceController.upload, 'enctype -> "multipart/form-data") {
+
+        <input type="file" name="picture"><br/>
+        <input type="file" name="csv"><br/>
+        <input type="file" name="xls"><br/><br/>
+
+        <input type="submit" value="Reiniciar simulación">
+
+
+    }
     
     <h3 id="clock"></h3>
     

@@ -4,14 +4,17 @@
 
 # Home page
 
-GET        /                                   controllers.HomeController.index()
+GET        /                                   controllers.ScalaEventSourceController.index()
 
-GET        /scala/comet                        controllers.ScalaCometController.index()
-GET        /scala/comet/liveClock              controllers.ScalaCometController.streamClock()
-
++nocsrf
 GET        /scala/eventSource                  controllers.ScalaEventSourceController.index()
+
++nocsrf
 GET        /scala/eventSource/liveClock        controllers.ScalaEventSourceController.streamClock()
 
++nocsrf
+POST  /          controllers.ScalaEventSourceController.upload()
+
 # Map static resources from the /public folder to the /assets URL path
-GET        /favicon.ico                        controllers.Assets.at(path="/public", file="favicon.ico")
++nocsrf
 GET        /assets/*file                       controllers.Assets.at(path="/public", file)
