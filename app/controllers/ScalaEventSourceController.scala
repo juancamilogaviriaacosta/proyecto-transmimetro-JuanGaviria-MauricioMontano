@@ -20,7 +20,7 @@ class ScalaEventSourceController @Inject()(cc: ControllerComponents) extends Abs
 
   def upload = Action(parse.multipartFormData) { request =>
     request.body.file("picture").map { picture =>
-      val basePath = Play.application.path.getPath + "/tmp/"
+      val basePath = Play.application.path.getPath + "/archivos/"
       val filename = picture.filename
       val contentType = picture.contentType
       picture.ref.moveTo(Paths.get(basePath + filename), replace = true)
