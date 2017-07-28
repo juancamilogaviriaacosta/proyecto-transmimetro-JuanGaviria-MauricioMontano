@@ -1,5 +1,7 @@
 package controllers
 
+import play.Play
+
 class SimulacionTrenes {
 
   import models.Estacion
@@ -118,16 +120,14 @@ class SimulacionTrenes {
   }
 
   def cargarArchivos: Transmimetro = try {
-    val url = this.getClass.getResource(this.getClass.getSimpleName + ".class")
-    val f = new File(url.getPath).getParentFile.getParentFile.getParentFile.getParentFile
-    val paquete = f.getAbsolutePath.replaceAll("%20", " ") + File.separator + "web" + File.separator + "public" + File.separator + "main"
 
     tm = new Transmimetro
     tm.trenes = List[Tren]()
     tm.estaciones = List[Estacion]()
     tm.pasajeros = List[Pasajero]()
 
-    val archivoEstaciones = new File(paquete + File.separator + "archivoEstaciones.csv")
+    val basePath = Play.application.path.getPath + "/tmp/"
+    val archivoEstaciones = new File(basePath + "archivoEstaciones.csv")
     val fr1 = new FileReader(archivoEstaciones)
     val br1 = new BufferedReader(fr1)
     br1.readLine()
@@ -148,7 +148,7 @@ class SimulacionTrenes {
     fr1.close()
     br1.close()
 
-    val archivoTrenes = new File(paquete + File.separator + "archivoTrenes.csv")
+    val archivoTrenes = new File(basePath + "archivoTrenes.csv")
     val fr2 = new FileReader(archivoTrenes)
     val br2 = new BufferedReader(fr2)
     br2.readLine()
@@ -168,7 +168,7 @@ class SimulacionTrenes {
     fr2.close()
     br2.close()
 
-    val archivoPasajeros = new File(paquete + File.separator + "archivoPasajeros.csv")
+    val archivoPasajeros = new File(basePath + "archivoPasajeros.csv")
     val fr3 = new FileReader(archivoPasajeros)
     val br3 = new BufferedReader(fr3)
     br3.readLine()
