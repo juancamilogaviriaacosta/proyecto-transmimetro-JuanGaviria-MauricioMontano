@@ -1,8 +1,11 @@
 package controllers
 
+import java.io.File
+
 import play.Play
 import java.nio.file.Paths
 import javax.inject.{Inject, Singleton}
+
 import play.api.http.ContentTypes
 import play.api.libs.EventSource
 import play.api.mvc._
@@ -20,6 +23,12 @@ class ScalaEventSourceController @Inject()(cc: ControllerComponents) extends Abs
 
   def upload = Action(parse.multipartFormData) { request =>
     request.body.file("picture").map { picture =>
+
+
+      val url = this.getClass.getResource(this.getClass.getSimpleName + ".class")
+      println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+      println(url)
+
       val basePath = Play.application.path.getPath + "/archivos/"
       val filename = picture.filename
       val contentType = picture.contentType
