@@ -28,7 +28,6 @@ class SimulacionTrenes {
             for (t <- tm.trenes) {
               siguienteParada(t)
             }
-            println("aaaaaaaaaaaaaaaaaaa " + llegaronTodosLosTrenes() + " " + System.currentTimeMillis() + " " + this)
             Thread.sleep(5000)
           }
         } catch {
@@ -138,6 +137,7 @@ class SimulacionTrenes {
       tm.estaciones = tmp :: tm.estaciones
       linea1 = br1.readLine()
     }
+    tm.estaciones = tm.estaciones.reverse
     fr1.close()
     br1.close()
 
@@ -158,6 +158,7 @@ class SimulacionTrenes {
       tm.trenes = tmp :: tm.trenes
       linea2 = br2.readLine()
     }
+    tm.trenes = tm.trenes.reverse
     fr2.close()
     br2.close()
 
@@ -174,6 +175,7 @@ class SimulacionTrenes {
       tm.pasajeros = tmp :: tm.pasajeros
       linea3 = br3.readLine()
     }
+    tm.pasajeros = tm.pasajeros.reverse
     fr3.close()
     br3.close()
     tm
@@ -202,23 +204,17 @@ class SimulacionTrenes {
   }
 
   def llegaronTodosLosTrenes(): Boolean = synchronized {
-    //println(tm.trenes)
     for (t <- tm.trenes) {
       if (t.estacionActual == null) {
-        //println(t.id + " null")
         return false
       } else if (!t.estacionActual.equals(t.estacionDestino)) {
-        //println(t.id + " " + t.estacionActual.nombre)
         return false
       }
     }
-    //println("LLEGARON")
     return true
   }
 
   def siguienteParada(tren: Tren): Unit = synchronized {
-    //println("TRENES: " + tm.trenes)
-    //println("TREN: " + tren)
     if (tren.estacionActual == null) {
       tren.estacionActual = tren.estacionOrigen;
     } else if (!tren.estacionActual.equals(tren.estacionDestino)) {
@@ -256,9 +252,9 @@ class SimulacionTrenes {
       info = info + "<tr> <td>"+ tmp.nombre +"</td> <td>"+ tmp.pasajeros.size +"</td> <td>"+ tmp.numeroIngresos +"</td> <td>"+ tmp.numeroSalidas +"</td> </tr>"
     }
     info = info + "</table> <br/> <br/>"
-    info = info + "<table align=center> <tr> <th>Tren</th> <th>Ubicación actual</th> <th>Numero de pasajeros</th> </tr>"
+    info = info + "<table align=center> <tr> <th>Tren</th> <th>Ubicación actual</th> <th>Numero de pasajeros</th> <th>Estado</th> </tr>"
     for (tmp <- tm.trenes) {
-      info = info + "<tr> <td>"+ tmp.id +"</td> <td>"+ tmp.estacionActual.nombre +"</td> <td>"+ tmp.pasajeros.size +"</td> </tr>"
+      info = info + "<tr> <td>"+ tmp.id +"</td> <td>"+ tmp.estacionActual.nombre +"</td> <td>"+ tmp.pasajeros.size +"</td> <td>"+ (if (tmp.estacionActual == null) ("Preparado") else (if (tmp.estacionActual == tmp.estacionDestino) ("Finalzó recorrido") else ("En curso") )) +"</td> </tr>"
     }
     info = info + "</table>"
     info
