@@ -28,6 +28,10 @@ class ScalaEventSourceController @Inject()(cc: ControllerComponents) extends Abs
       val url = this.getClass.getResource(this.getClass.getSimpleName + ".class")
       println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
       println(url)
+      println(Play.application.getFile("."))
+
+      val xsa = new File("hola.txt");
+      println(xsa.getAbsolutePath)
 
       val basePath = Play.application.path.getPath + "/archivos/"
       val filename = picture.filename
