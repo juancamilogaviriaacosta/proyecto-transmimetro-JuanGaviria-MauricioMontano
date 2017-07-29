@@ -23,10 +23,17 @@ class ScalaEventSourceController @Inject()(cc: ControllerComponents) extends Abs
 
   def upload = Action(parse.multipartFormData) { request =>
     request.body.file("picture").map { picture =>
-      val basePath = "/app/public/upload/"
+      var basePath = "/app/public/upload/"
+
+      var archivoTmp = new File(basePath)
+      if(!archivoTmp.exists()) {
+        basePath = Play.application().getFile("/public/upload").getAbsolutePath();
+      }
+
       val filename = picture.filename
       val contentType = picture.contentType
       picture.ref.moveTo(Paths.get(basePath + filename), replace = true)
+      reiniciarSimulacion();
       Ok(views.html.scalaeventsource())
     }.getOrElse {
       Redirect(routes.ScalaEventSourceController.index).flashing(

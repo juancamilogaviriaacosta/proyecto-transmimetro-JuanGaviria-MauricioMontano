@@ -11,8 +11,13 @@ import scala.concurrent.duration._
 trait ScalaTicker {
 
   object instancia {
-    val st:SimulacionTrenes = new SimulacionTrenes
+    var st:SimulacionTrenes = new SimulacionTrenes
     st.simular()
+  }
+
+  def reiniciarSimulacion(): Unit = {
+    instancia.st = new SimulacionTrenes;
+    instancia.st.simular()
   }
 
   def stringSource: Source[String, _] = {
