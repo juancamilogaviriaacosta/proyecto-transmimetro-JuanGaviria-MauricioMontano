@@ -121,7 +121,10 @@ class SimulacionTrenes {
     tm.estaciones = List[Estacion]()
     tm.pasajeros = List[Pasajero]()
 
-    val archivoEstaciones = Play.application().getFile("/public/archivoEstaciones.csv");
+    var archivoEstaciones = new File("/app/public/archivoEstaciones.csv")
+    if(!archivoEstaciones.exists()) {
+      archivoEstaciones = Play.application().getFile("/public/archivoEstaciones.csv");
+    }
     val fr1 = new FileReader(archivoEstaciones)
     val br1 = new BufferedReader(fr1)
     br1.readLine()
@@ -141,7 +144,10 @@ class SimulacionTrenes {
     fr1.close()
     br1.close()
 
-    val archivoTrenes = Play.application().getFile("/public/archivoTrenes.csv");
+    var archivoTrenes = new File("/app/public/archivoTrenes.csv")
+    if(!archivoTrenes.exists()) {
+      archivoTrenes = Play.application().getFile("/public/archivoTrenes.csv");
+    }
     val fr2 = new FileReader(archivoTrenes)
     val br2 = new BufferedReader(fr2)
     br2.readLine()
@@ -162,7 +168,10 @@ class SimulacionTrenes {
     fr2.close()
     br2.close()
 
-    val archivoPasajeros = Play.application().getFile("/public/archivoPasajeros.csv");
+    var archivoPasajeros = new File("/app/public/archivoPasajeros.csv")
+    if(!archivoPasajeros.exists()) {
+      archivoPasajeros = Play.application().getFile("/public/archivoPasajeros.csv");
+    }
     val fr3 = new FileReader(archivoPasajeros)
     val br3 = new BufferedReader(fr3)
     br3.readLine()
