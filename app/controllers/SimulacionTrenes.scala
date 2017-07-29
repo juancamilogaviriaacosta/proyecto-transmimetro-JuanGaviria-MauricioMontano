@@ -24,11 +24,11 @@ class SimulacionTrenes {
     new Thread(new Runnable() {
       override def run(): Unit = {
         try {
-          while (!llegaronTodosLosTrenes(tm.trenes)) {
+          while (!llegaronTodosLosTrenes()) {
             for (t <- tm.trenes) {
-              siguienteParada(tm.estaciones, t)
+              siguienteParada(t)
             }
-            println("aaaaaaaaaaaaaaaaaaa " + llegaronTodosLosTrenes(tm.trenes) + " " + System.currentTimeMillis() + " " + this)
+            println("aaaaaaaaaaaaaaaaaaa " + llegaronTodosLosTrenes() + " " + System.currentTimeMillis() + " " + this)
             Thread.sleep(5000)
           }
         } catch {
@@ -42,7 +42,7 @@ class SimulacionTrenes {
     new Thread(new Runnable() {
       override def run(): Unit = {
         try {
-          while (!llegaronTodosLosTrenes(tm.trenes)) {
+          while (!llegaronTodosLosTrenes()) {
             for (e <- tm.estaciones) {
               val numeroPasajerosEnEstacion = new Random().nextInt(tm.pasajeros.size)
               if (numeroPasajerosEnEstacion > 0) {
@@ -52,6 +52,7 @@ class SimulacionTrenes {
                 tm.pasajeros = tm.pasajeros diff pasajerosEstacion
               }
             }
+            Thread.sleep(2000)
           }
         } catch {
           case e: Exception =>
@@ -64,7 +65,7 @@ class SimulacionTrenes {
     new Thread(new Runnable() {
       override def run(): Unit = {
         try {
-          while (llegaronTodosLosTrenes(tm.trenes)) {
+          while (!llegaronTodosLosTrenes()) {
             for (e <- tm.estaciones) {
               for (t <- tm.trenes) {
                 if (t.estacionActual != null && t.estacionActual.equals(e) && !e.pasajeros.isEmpty) {
@@ -80,6 +81,7 @@ class SimulacionTrenes {
                 }
               }
             }
+            Thread.sleep(3000)
           }
         } catch {
           case e: Exception =>
@@ -92,7 +94,7 @@ class SimulacionTrenes {
     new Thread(new Runnable() {
       override def run(): Unit = {
         try {
-          while (!llegaronTodosLosTrenes(tm.trenes)) {
+          while (!llegaronTodosLosTrenes()) {
             for (t <- tm.trenes) {
               if (new Random().nextBoolean() && !t.pasajeros.isEmpty) {
                 t.pasajeros = t.pasajeros diff List(t.pasajeros(0))
@@ -103,6 +105,7 @@ class SimulacionTrenes {
                 t.pasajeros = t.pasajeros diff t.pasajeros
               }
             }
+            Thread.sleep(2500)
           }
         } catch {
           case e: Exception =>
@@ -147,9 +150,9 @@ class SimulacionTrenes {
       val lineaSplit:Array[String] = linea2.split(";")
       val tmp = new Tren
       tmp.id = (Integer.valueOf(lineaSplit(0)))
-      tmp.estacionOrigen = buscarEstacion(tm.estaciones, lineaSplit(1))
+      tmp.estacionOrigen = buscarEstacion(lineaSplit(1))
       tmp.horaSalida = lineaSplit(2)
-      tmp.estacionDestino = buscarEstacion(tm.estaciones, lineaSplit(3))
+      tmp.estacionDestino = buscarEstacion(lineaSplit(3))
       tmp.capacidadPasajeros = Integer.valueOf(lineaSplit(4))
       tmp.pasajeros = List[Pasajero]()
       tm.trenes = tmp :: tm.trenes
@@ -180,51 +183,66 @@ class SimulacionTrenes {
       null
   }
 
-  def buscarEstacion(estaciones: List[Estacion], nombre: String): Estacion = {
-    for (tmp:Estacion <- estaciones) {
-      if (tmp.nombre.equals(nombre)) return tmp
+  def buscarEstacion(nombre: String): Estacion = synchronized {
+    for (tmp:Estacion <- tm.estaciones) {
+      if (tmp.nombre.equals(nombre)) {
+        return tmp
+      }
     }
-    null
+    return null
   }
 
-  def buscarTren(trenes: List[Tren], id: Integer): Tren = {
-    for (tmp:Tren <- trenes) {
-      if (tmp.id.equals(id)) return tmp
+  def buscarTren(id: Integer): Tren = synchronized {
+    for (tmp:Tren <- tm.trenes) {
+      if (tmp.id.equals(id)) {
+        return tmp
+      }
     }
-    null
+    return null
   }
 
-  def llegaronTodosLosTrenes(trenes: List[Tren]): Boolean = {
-    for (t <- trenes) {
-      if (t.estacionActual == null) return false
-      else if (!t.estacionActual.equals(t.estacionDestino)) return false
+  def llegaronTodosLosTrenes(): Boolean = synchronized {
+    //println(tm.trenes)
+    for (t <- tm.trenes) {
+      if (t.estacionActual == null) {
+        //println(t.id + " null")
+        return false
+      } else if (!t.estacionActual.equals(t.estacionDestino)) {
+        //println(t.id + " " + t.estacionActual.nombre)
+        return false
+      }
     }
-    true
+    //println("LLEGARON")
+    return true
   }
 
-  def siguienteParada(estaciones: List[Estacion], tren: Tren): Unit = {
+  def siguienteParada(tren: Tren): Unit = synchronized {
+    //println("TRENES: " + tm.trenes)
+    //println("TREN: " + tren)
     if (tren.estacionActual == null) {
       tren.estacionActual = tren.estacionOrigen;
     } else if (!tren.estacionActual.equals(tren.estacionDestino)) {
       if (tren.estacionOrigen.orden > tren.estacionDestino.orden) {
-        var i = estaciones.size - 1
+        var i = tm.estaciones.size - 1
         while(i >= 0) {
-          val e:Estacion = estaciones(i);
+          val e:Estacion = tm.estaciones(i);
           if (e.orden < tren.estacionActual.orden) {
             tren.estacionActual = e;
-            i = 0
+            i = -1
+          } else {
+            i = i - 1
           }
-          i = i - 1
         }
       } else {
         var i = 0
-        while(i < estaciones.size) {
-          val e:Estacion = estaciones(i);
+        while(i < tm.estaciones.size) {
+          val e:Estacion = tm.estaciones(i);
           if (e.orden > tren.estacionActual.orden) {
             tren.estacionActual = e
-            i = estaciones.size
+            i = tm.estaciones.size
+          } else {
+            i = i + 1
           }
-          i = i + 1
         }
       }
     }
