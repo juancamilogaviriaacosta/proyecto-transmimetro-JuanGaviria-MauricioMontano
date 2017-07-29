@@ -126,7 +126,7 @@ class SimulacionTrenes {
     tm.estaciones = List[Estacion]()
     tm.pasajeros = List[Pasajero]()
 
-    val basePath = Play.application.path.getPath + "/archivos/"
+    val basePath = "/app/public/"
     val archivoEstaciones = new File(basePath + "archivoEstaciones.csv")
     val fr1 = new FileReader(archivoEstaciones)
     val br1 = new BufferedReader(fr1)
