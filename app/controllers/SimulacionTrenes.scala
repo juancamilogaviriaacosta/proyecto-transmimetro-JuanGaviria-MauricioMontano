@@ -24,12 +24,11 @@ class SimulacionTrenes {
     new Thread(new Runnable() {
       override def run(): Unit = {
         try {
-          while ( {
-            !llegaronTodosLosTrenes(tm.trenes)
-          }) {
+          while (!llegaronTodosLosTrenes(tm.trenes)) {
             for (t <- tm.trenes) {
               siguienteParada(tm.estaciones, t)
             }
+            println("aaaaaaaaaaaaaaaaaaa " + llegaronTodosLosTrenes(tm.trenes) + " " + System.currentTimeMillis() + " " + this)
             Thread.sleep(5000)
           }
         } catch {
@@ -43,9 +42,7 @@ class SimulacionTrenes {
     new Thread(new Runnable() {
       override def run(): Unit = {
         try {
-          while ( {
-            !llegaronTodosLosTrenes(tm.trenes)
-          }) {
+          while (!llegaronTodosLosTrenes(tm.trenes)) {
             for (e <- tm.estaciones) {
               val numeroPasajerosEnEstacion = new Random().nextInt(tm.pasajeros.size)
               if (numeroPasajerosEnEstacion > 0) {
@@ -67,9 +64,7 @@ class SimulacionTrenes {
     new Thread(new Runnable() {
       override def run(): Unit = {
         try {
-          while ( {
-            !llegaronTodosLosTrenes(tm.trenes)
-          }) {
+          while (llegaronTodosLosTrenes(tm.trenes)) {
             for (e <- tm.estaciones) {
               for (t <- tm.trenes) {
                 if (t.estacionActual != null && t.estacionActual.equals(e) && !e.pasajeros.isEmpty) {
@@ -97,9 +92,7 @@ class SimulacionTrenes {
     new Thread(new Runnable() {
       override def run(): Unit = {
         try {
-          while ( {
-            !llegaronTodosLosTrenes(tm.trenes)
-          }) {
+          while (!llegaronTodosLosTrenes(tm.trenes)) {
             for (t <- tm.trenes) {
               if (new Random().nextBoolean() && !t.pasajeros.isEmpty) {
                 t.pasajeros = t.pasajeros diff List(t.pasajeros(0))
@@ -126,29 +119,26 @@ class SimulacionTrenes {
     tm.estaciones = List[Estacion]()
     tm.pasajeros = List[Pasajero]()
 
-    val basePath = "/app/public/"
-    val archivoEstaciones = new File(basePath + "archivoEstaciones.csv")
+    val archivoEstaciones = Play.application().getFile("/public/archivoEstaciones.csv");
     val fr1 = new FileReader(archivoEstaciones)
     val br1 = new BufferedReader(fr1)
     br1.readLine()
     var linea1:String = br1.readLine()
-    var contador = 0
     while (linea1 != null) {
       val lineaSplit = linea1.split(";")
       val tmp = new Estacion
       tmp.numeroIngresos = 0
       tmp.numeroSalidas = 0
-      tmp.nombre = (lineaSplit(0))
-      tmp.orden = contador
+      tmp.nombre = lineaSplit(0)
+      tmp.orden = Integer.valueOf(lineaSplit(1))
       tmp.pasajeros = List[Pasajero]()
       tm.estaciones = tmp :: tm.estaciones
-      contador = contador + 1
       linea1 = br1.readLine()
     }
     fr1.close()
     br1.close()
 
-    val archivoTrenes = new File(basePath + "archivoTrenes.csv")
+    val archivoTrenes = Play.application().getFile("/public/archivoTrenes.csv");
     val fr2 = new FileReader(archivoTrenes)
     val br2 = new BufferedReader(fr2)
     br2.readLine()
@@ -168,7 +158,7 @@ class SimulacionTrenes {
     fr2.close()
     br2.close()
 
-    val archivoPasajeros = new File(basePath + "archivoPasajeros.csv")
+    val archivoPasajeros = Play.application().getFile("/public/archivoPasajeros.csv");
     val fr3 = new FileReader(archivoPasajeros)
     val br3 = new BufferedReader(fr3)
     br3.readLine()
@@ -176,8 +166,8 @@ class SimulacionTrenes {
     while (linea3 != null) {
       val lineaSplit = linea3.split(";")
       val tmp = new Pasajero
-      tmp.id = (Integer.valueOf(lineaSplit(0)))
-      tmp.nombre = (lineaSplit(1))
+      tmp.id = Integer.valueOf(lineaSplit(0))
+      tmp.nombre = lineaSplit(1)
       tm.pasajeros = tmp :: tm.pasajeros
       linea3 = br3.readLine()
     }
