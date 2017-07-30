@@ -7,7 +7,7 @@ class Tren {
   var estacionOrigen:Estacion = null
   var estacionDestino:Estacion = null
   var estacionActual:Estacion = null
-  var pasajeros:List[Pasajero] = null
+  var pasajerosActual:Integer = null
   var capacidadPasajeros:Integer = null
 
 }
