@@ -33,7 +33,7 @@ class SimulacionTrenes {
                 tm.setPasajerosActualesEnSistema(tm.getPasajerosActualesEnSistema - t.getPasajerosActual)
                 t.setPasajerosActual(0)
               }
-              Thread.sleep(2000)
+              Thread.sleep(2000) //frecuencia de los buses es de 2 segundos
             }
           } catch {
             case e: Exception =>
@@ -198,12 +198,14 @@ class SimulacionTrenes {
     fr2.close()
     br2.close()
 
+    //comienza la operacion a las 4:00
     val cal = Calendar.getInstance()
     cal.set(Calendar.HOUR_OF_DAY, 4);
     cal.set(Calendar.MINUTE, 0);
     cal.set(Calendar.SECOND, 0);
     tm.setHoraActual(cal.getTime)
 
+    //finaliza la operacion a las 23:00
     val cal2 = Calendar.getInstance()
     cal2.set(Calendar.HOUR_OF_DAY, 23);
     cal2.set(Calendar.MINUTE, 0);
@@ -236,8 +238,16 @@ class SimulacionTrenes {
   }
 
   def finDeOperacionDiaria(): Boolean = synchronized {
-    val resp = tm.getHoraActual.after(tm.getHoraFinDeOperacion)
-    return resp
+    val finHora = tm.getHoraActual.after(tm.getHoraFinDeOperacion)
+    var finTrenes = true;
+    for (t <- tm.getTrenes) {
+      if (t.getEstacionActual == null) {
+        finTrenes = false
+      } else if (!t.getEstacionActual.equals(t.getEstacionDestino)) {
+        finTrenes = false
+      }
+    }
+    return finHora || finTrenes
   }
 
   def siguienteParada(tren: Tren): Unit = synchronized {
