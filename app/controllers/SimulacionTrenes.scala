@@ -26,6 +26,13 @@ class SimulacionTrenes {
           try {
             while (!finDeOperacionDiaria()) {
               siguienteParada(t)
+
+              //si el tren llega a su destino entonces se bajan todos los pasajeros
+              if (t.getEstacionActual != null && t.getEstacionActual.equals(t.getEstacionDestino)) {
+                t.getEstacionActual.setNumeroSalidas(t.getEstacionActual.getNumeroSalidas + t.getPasajerosActual)
+                tm.setPasajerosActualesEnSistema(tm.getPasajerosActualesEnSistema - t.getPasajerosActual)
+                t.setPasajerosActual(0)
+              }
               Thread.sleep(1000)
             }
           } catch {
@@ -43,7 +50,7 @@ class SimulacionTrenes {
         override def run(): Unit = {
           try {
             while (!finDeOperacionDiaria()) {
-              val numeroPasajerosEnEstacion = if ((tm.getCapacidadSistema - tm.getPasajerosActualesEnSistema) < 0) 0 else new Random().nextInt(tm.getCapacidadSistema - tm.getPasajerosActualesEnSistema)
+              val numeroPasajerosEnEstacion = new Random().nextInt(100)
               if (numeroPasajerosEnEstacion > 0) {
                 e.setPasajerosActual(e.getPasajerosActual + numeroPasajerosEnEstacion)
                 e.setNumeroIngresos(e.getNumeroIngresos + numeroPasajerosEnEstacion)
@@ -69,7 +76,7 @@ class SimulacionTrenes {
                 if (t.getEstacionActual != null && t.getEstacionActual.equals(e) && e.getPasajerosActual > 0) {
                   val numeroPasajerosCabenEnTren:Integer = t.getCapacidadDelTren - t.getPasajerosActual
                   t.setPasajerosActual(t.getPasajerosActual + numeroPasajerosCabenEnTren)
-                  e.setPasajerosActual(e.getPasajerosActual - numeroPasajerosCabenEnTren)
+                  e.setPasajerosActual(if (e.getPasajerosActual - numeroPasajerosCabenEnTren < 0) 0 else e.getPasajerosActual - numeroPasajerosCabenEnTren)
                 }
               }
             }
@@ -93,11 +100,6 @@ class SimulacionTrenes {
                 t.setPasajerosActual(t.getPasajerosActual - numeroPasajerosQueBajan)
                 t.getEstacionActual.setNumeroSalidas(t.getEstacionActual.getNumeroSalidas + numeroPasajerosQueBajan)
                 tm.setPasajerosActualesEnSistema(tm.getPasajerosActualesEnSistema - numeroPasajerosQueBajan)
-              }
-              if (t.getEstacionActual != null && t.getEstacionActual.equals(t.getEstacionDestino)) {
-                t.getEstacionActual.setNumeroSalidas(t.getEstacionActual.getNumeroSalidas + t.getPasajerosActual)
-                tm.setPasajerosActualesEnSistema(tm.getPasajerosActualesEnSistema - t.getPasajerosActual)
-                t.setPasajerosActual(0)
               }
             }
             Thread.sleep(1500)
