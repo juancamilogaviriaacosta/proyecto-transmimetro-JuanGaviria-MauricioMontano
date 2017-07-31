@@ -284,7 +284,8 @@ class SimulacionTrenes {
 
   def imprimir(): String = synchronized {
     var info:String = ""
-    info = "Informe " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(tm.getHoraActual) + "<br/><br/>"
+    info = "Estado: " + (if(finDeOperacionDiaria()) "<font color=red>Fin de la operación diaria</font>" else "Operando") + "<br/>"
+    info = info +"Informe " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(tm.getHoraActual) + "<br/><br/>"
     info = info + "<table> <tr> <th>Estación</th> <th>Pasajeros actual</th> <th>Total ingresos</th> <th>Total salidas</th> </tr>"
     for (tmp <- tm.getEstaciones) {
       info = info + "<tr> <td>"+ tmp.getNombre +"</td> <td>"+ tmp.getPasajerosActual +"</td> <td>"+ tmp.getNumeroIngresos +"</td> <td>"+ tmp.getNumeroSalidas +"</td> </tr>"
