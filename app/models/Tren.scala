@@ -1,9 +1,11 @@
 package models
 
+import java.util.Date
+
 class Tren {
 
   private var id:Integer = null
-  private var horaSalida:String = null
+  private var horaSalida:Date = null
   private var estacionOrigen:Estacion = null
   private var estacionDestino:Estacion = null
   private var estacionActual:Estacion = null
@@ -16,9 +18,9 @@ class Tren {
     this.id = id
   }
 
-  def getHoraSalida: String = synchronized { horaSalida }
+  def getHoraSalida: Date = synchronized { horaSalida }
 
-  def setHoraSalida(horaSalida: String): Unit = synchronized {
+  def setHoraSalida(horaSalida: Date): Unit = synchronized {
     this.horaSalida = horaSalida
   }
 

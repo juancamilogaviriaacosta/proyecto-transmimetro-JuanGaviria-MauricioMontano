@@ -1,11 +1,15 @@
 package models
 
+import java.util.Date;
+
 class Transmimetro {
 
   private var estaciones:List[Estacion] = null
   private var trenes:List[Tren] = null
   private var capacidadSistema:Integer = 990000
   private var pasajerosActualesEnSistema:Integer = 0
+  private var horaFinDeOperacion:Date = null
+  private var horaActual:Date = null
 
   def getEstaciones: List[Estacion] = synchronized { estaciones }
 
@@ -29,6 +33,18 @@ class Transmimetro {
 
   def setPasajerosActualesEnSistema(pasajerosActualesEnSistema: Integer): Unit = synchronized {
     this.pasajerosActualesEnSistema = pasajerosActualesEnSistema
+  }
+
+  def getHoraActual: Date = synchronized { horaActual }
+
+  def setHoraActual(horaActual: Date): Unit = synchronized {
+    this.horaActual = horaActual
+  }
+
+  def getHoraFinDeOperacion: Date = synchronized { horaFinDeOperacion }
+
+  def setHoraFinDeOperacion(horaFinDeOperacion: Date): Unit = synchronized {
+    this.horaFinDeOperacion = horaFinDeOperacion
   }
 
 }

@@ -8,7 +8,7 @@ import java.io.File
 import java.io.FileReader
 import java.text.SimpleDateFormat
 import java.util.Random
-import java.util.Date
+import java.util.Calendar
 import play.Play
 
 class SimulacionTrenes {
@@ -33,7 +33,7 @@ class SimulacionTrenes {
                 tm.setPasajerosActualesEnSistema(tm.getPasajerosActualesEnSistema - t.getPasajerosActual)
                 t.setPasajerosActual(0)
               }
-              Thread.sleep(1000)
+              Thread.sleep(2000)
             }
           } catch {
             case e: Exception =>
@@ -56,7 +56,7 @@ class SimulacionTrenes {
                 e.setNumeroIngresos(e.getNumeroIngresos + numeroPasajerosEnEstacion)
                 tm.setPasajerosActualesEnSistema(numeroPasajerosEnEstacion)
               }
-              Thread.sleep(1500)
+              Thread.sleep(2500)
             }
           } catch {
             case e: Exception =>
@@ -73,14 +73,14 @@ class SimulacionTrenes {
           while (!finDeOperacionDiaria()) {
             for (e <- tm.getEstaciones) {
               for (t <- tm.getTrenes) {
-                if (t.getEstacionActual != null && t.getEstacionActual.equals(e) && e.getPasajerosActual > 0) {
+                if (t.getEstacionActual != null && !t.getEstacionActual.equals(t.getEstacionDestino) && t.getEstacionActual.equals(e) && e.getPasajerosActual > 0) {
                   val numeroPasajerosCabenEnTren:Integer = t.getCapacidadDelTren - t.getPasajerosActual
                   t.setPasajerosActual(t.getPasajerosActual + numeroPasajerosCabenEnTren)
                   e.setPasajerosActual(if (e.getPasajerosActual - numeroPasajerosCabenEnTren < 0) 0 else e.getPasajerosActual - numeroPasajerosCabenEnTren)
                 }
               }
             }
-            Thread.sleep(1500)
+            Thread.sleep(2500)
           }
         } catch {
           case e: Exception =>
@@ -95,14 +95,40 @@ class SimulacionTrenes {
         try {
           while (!finDeOperacionDiaria()) {
             for (t <- tm.getTrenes) {
-              if (new Random().nextBoolean() && t.getPasajerosActual > 0) {
+              if (t.getPasajerosActual > 0) {
                 val numeroPasajerosQueBajan = new Random().nextInt(t.getPasajerosActual)
                 t.setPasajerosActual(t.getPasajerosActual - numeroPasajerosQueBajan)
                 t.getEstacionActual.setNumeroSalidas(t.getEstacionActual.getNumeroSalidas + numeroPasajerosQueBajan)
                 tm.setPasajerosActualesEnSistema(tm.getPasajerosActualesEnSistema - numeroPasajerosQueBajan)
               }
             }
-            Thread.sleep(1500)
+            Thread.sleep(2500)
+          }
+        } catch {
+          case e: Exception =>
+            e.printStackTrace()
+        }
+      }
+    }).start()
+
+    //Hilo para emular el paso del tiempo
+    new Thread(new Runnable() {
+      override def run(): Unit = {
+        try {
+          while (!finDeOperacionDiaria()) {
+            val cal = Calendar.getInstance();
+            cal.setTime(tm.getHoraActual)
+            cal.add(Calendar.MINUTE, 1)
+            tm.setHoraActual(cal.getTime)
+            Thread.sleep(2500)
+          }
+
+          //Se deben salir del sistema las personas que queden en las estaciones al final del dia
+          if(finDeOperacionDiaria) {
+            for (e <- tm.getEstaciones) {
+              e.setNumeroSalidas(e.getNumeroSalidas + e.getPasajerosActual);
+              e.setPasajerosActual(0)
+            }
           }
         } catch {
           case e: Exception =>
@@ -154,7 +180,14 @@ class SimulacionTrenes {
       val tmp = new Tren
       tmp.setId(Integer.valueOf(lineaSplit(0)))
       tmp.setEstacionOrigen(buscarEstacion(lineaSplit(1)))
-      tmp.setHoraSalida(lineaSplit(2))
+      val horaSplit:Array[String] = lineaSplit(2).split(":");
+
+      val cal = Calendar.getInstance()
+      cal.set(Calendar.HOUR_OF_DAY, Integer.valueOf(horaSplit(0)));
+      cal.set(Calendar.MINUTE, Integer.valueOf(horaSplit(1)));
+      cal.set(Calendar.SECOND, 0);
+
+      tmp.setHoraSalida(cal.getTime)
       tmp.setEstacionDestino(buscarEstacion(lineaSplit(3)))
       tmp.setCapacidadDelTren(Integer.valueOf(lineaSplit(4)))
       tmp.setPasajerosActual(0)
@@ -164,6 +197,19 @@ class SimulacionTrenes {
     tm.setTrenes(tm.getTrenes.reverse)
     fr2.close()
     br2.close()
+
+    val cal = Calendar.getInstance()
+    cal.set(Calendar.HOUR_OF_DAY, 4);
+    cal.set(Calendar.MINUTE, 0);
+    cal.set(Calendar.SECOND, 0);
+    tm.setHoraActual(cal.getTime)
+
+    val cal2 = Calendar.getInstance()
+    cal2.set(Calendar.HOUR_OF_DAY, 23);
+    cal2.set(Calendar.MINUTE, 0);
+    cal2.set(Calendar.SECOND, 0);
+    tm.setHoraFinDeOperacion(cal2.getTime)
+
     return tm
   } catch {
     case e: Exception =>
@@ -190,19 +236,15 @@ class SimulacionTrenes {
   }
 
   def finDeOperacionDiaria(): Boolean = synchronized {
-    for (t <- tm.getTrenes) {
-      if (t.getEstacionActual == null) {
-        return false
-      } else if (!t.getEstacionActual.equals(t.getEstacionDestino)) {
-        return false
-      }
-    }
-    return true
+    val resp = tm.getHoraActual.after(tm.getHoraFinDeOperacion)
+    return resp
   }
 
   def siguienteParada(tren: Tren): Unit = synchronized {
     if (tren.getEstacionActual == null) {
-      tren.setEstacionActual(tren.getEstacionOrigen)
+      if(tm.getHoraActual.after(tren.getHoraSalida)) {
+        tren.setEstacionActual(tren.getEstacionOrigen)
+      }
     } else if (!tren.getEstacionActual.equals(tren.getEstacionDestino)) {
       if (tren.getEstacionOrigen.getOrden > tren.getEstacionDestino.getOrden) {
         var i = tm.getEstaciones.size - 1
@@ -232,7 +274,7 @@ class SimulacionTrenes {
 
   def imprimir(): String = synchronized {
     var info:String = ""
-    info = "Informe " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + "<br/><br/>"
+    info = "Informe " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(tm.getHoraActual) + "<br/><br/>"
     info = info + "<table> <tr> <th>Estación</th> <th>Pasajeros actual</th> <th>Total ingresos</th> <th>Total salidas</th> </tr>"
     for (tmp <- tm.getEstaciones) {
       info = info + "<tr> <td>"+ tmp.getNombre +"</td> <td>"+ tmp.getPasajerosActual +"</td> <td>"+ tmp.getNumeroIngresos +"</td> <td>"+ tmp.getNumeroSalidas +"</td> </tr>"
@@ -240,7 +282,7 @@ class SimulacionTrenes {
     info = info + "</table> <br/> <br/>"
     info = info + "<table align=center> <tr> <th>Tren</th> <th>Ubicación actual</th> <th>Numero de pasajeros</th> <th>Estado</th> </tr>"
     for (tmp <- tm.getTrenes) {
-      info = info + "<tr> <td>"+ tmp.getId +"</td> <td>"+ tmp.getEstacionActual.getNombre +"</td> <td>"+ tmp.getPasajerosActual +"</td> <td>"+ (if (tmp.getEstacionActual == null) ("Preparado") else (if (tmp.getEstacionActual == tmp.getEstacionDestino) ("Finalzó recorrido") else ("En curso") )) +"</td> </tr>"
+      info = info + "<tr> <td>"+ tmp.getId +"</td> <td>" + (if (tmp.getEstacionActual == null) tmp.getEstacionOrigen.getNombre else tmp.getEstacionActual.getNombre) +"</td> <td>"+ tmp.getPasajerosActual +"</td> <td>"+ (if (tmp.getEstacionActual == null) ("Preparado") else (if (tmp.getEstacionActual == tmp.getEstacionDestino) ("Finalzó recorrido") else ("En curso") )) +"</td> </tr>"
     }
     info = info + "</table>"
     info
