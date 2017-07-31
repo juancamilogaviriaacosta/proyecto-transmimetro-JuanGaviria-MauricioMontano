@@ -15,8 +15,8 @@ class SimulacionTrenes {
 
   private var tm:Transmimetro = null
 
-  def simular(): Unit = {
-    cargarArchivos
+  def simular(archivos:Boolean): Unit = {
+    cargarArchivos(archivos)
 
     //Se crea un hilo por cada tren para representar su comportamiento independiente
     //Los hilos generan el movimiento de cada tren
@@ -138,16 +138,25 @@ class SimulacionTrenes {
     }).start()
   }
 
-  def cargarArchivos: Transmimetro = try {
+  def cargarArchivos(archivos:Boolean): Transmimetro = try {
 
     tm = new Transmimetro
     tm.setTrenes(List[Tren]())
     tm.setEstaciones(List[Estacion]())
 
-    var archivoEstaciones = new File("/app/public/archivoEstaciones.csv")
-    if(!archivoEstaciones.exists()) {
-      archivoEstaciones = Play.application().getFile("/public/archivoEstaciones.csv")
+    var archivoEstaciones:File = null
+    if(archivos) {
+      archivoEstaciones = new File("/app/public/upload/archivoEstaciones.csv")
+      if(!archivoEstaciones.exists()) {
+        archivoEstaciones = Play.application().getFile("/public/upload/archivoEstaciones.csv")
+      }
+    } else {
+      archivoEstaciones = new File("/app/public/archivoEstaciones.csv")
+      if(!archivoEstaciones.exists()) {
+        archivoEstaciones = Play.application().getFile("/public/archivoEstaciones.csv")
+      }
     }
+
     val fr1 = new FileReader(archivoEstaciones)
     val br1 = new BufferedReader(fr1)
     br1.readLine()
@@ -167,10 +176,19 @@ class SimulacionTrenes {
     fr1.close()
     br1.close()
 
-    var archivoTrenes = new File("/app/public/archivoTrenes.csv")
-    if(!archivoTrenes.exists()) {
-      archivoTrenes = Play.application().getFile("/public/archivoTrenes.csv")
+    var archivoTrenes:File = null
+    if(archivos) {
+      archivoTrenes = new File("/app/public/upload/archivoTrenes.csv")
+      if(!archivoTrenes.exists()) {
+        archivoTrenes = Play.application().getFile("/public/upload/archivoTrenes.csv")
+      }
+    } else {
+      archivoTrenes = new File("/app/public/archivoTrenes.csv")
+      if(!archivoTrenes.exists()) {
+        archivoTrenes = Play.application().getFile("/public/archivoTrenes.csv")
+      }
     }
+
     val fr2 = new FileReader(archivoTrenes)
     val br2 = new BufferedReader(fr2)
     br2.readLine()

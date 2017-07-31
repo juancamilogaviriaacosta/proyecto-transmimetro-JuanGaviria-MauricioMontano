@@ -12,12 +12,12 @@ trait ScalaTicker {
 
   object instancia {
     var st:SimulacionTrenes = new SimulacionTrenes
-    st.simular()
+    st.simular(false)
   }
 
   def reiniciarSimulacion(): Unit = {
     instancia.st = new SimulacionTrenes;
-    instancia.st.simular()
+    instancia.st.simular(true)
   }
 
   def stringSource: Source[String, _] = {

@@ -27,7 +27,7 @@ class ScalaEventSourceController @Inject()(cc: ControllerComponents) extends Abs
 
       var archivoTmp = new File(basePath)
       if(!archivoTmp.exists()) {
-        basePath = Play.application().getFile("/public/upload").getAbsolutePath();
+        basePath = Play.application().getFile("/public/upload/").getAbsolutePath() + File.separator;
       }
 
       val filename = picture.filename

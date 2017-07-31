@@ -2,17 +2,16 @@
     
     <h1>Transmi Metro</h1>
 
-    @helper.form(action = routes.ScalaEventSourceController.upload, 'enctype -> "multipart/form-data") {
+    @helper.form(action = routes.ScalaEventSourceController.upload(), 'enctype -> "multipart/form-data") {
 
-        <input type="file" name="picture"><br/>
-        <input type="file" name="csv"><br/>
-        <input type="file" name="xls"><br/><br/>
-
-        <input type="submit" value="Reiniciar simulación">
-
-
+        Para reinicar la simulación se debe subir un archivo a la vez (<a href="/assets/archivoEstaciones.csv">archivoEstaciones.csv</a> y <a href="/assets/archivoTrenes.csv">archivoTrenes.csv</a>)<br/>
+        <br/><br/>
+        <input type="file" name="picture">&nbsp;
+        <input type="submit" value="Subir">
     }
-    
+
+    <br/>
+
     <h3 id="clock"></h3>
     
     <p>
