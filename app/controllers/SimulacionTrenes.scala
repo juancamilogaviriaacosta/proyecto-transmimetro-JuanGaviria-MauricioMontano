@@ -15,18 +15,12 @@ class SimulacionTrenes {
 
   private var tm:Transmimetro = null
 
-  def getTm: Transmimetro = synchronized { tm }
-
-  def setTm(tm: Transmimetro): Unit = synchronized  {
-    this.tm = tm
-  }
-
   def simular(): Unit = {
     cargarArchivos
 
     //Se crea un hilo por cada tren para representar su comportamiento independiente
     //Los hilos generan el movimiento de cada tren
-    for (t <- getTm.trenes) {
+    for (t <- tm.getTrenes) {
       new Thread(new Runnable() {
         override def run(): Unit = {
           try {
@@ -44,16 +38,16 @@ class SimulacionTrenes {
     
     //Se crea un hilo por cada estacion para representar su comportamiento independiente
     //Los hilos reciben pasajeros en las estaciones de manera aleatoria
-    for (e <- getTm.estaciones) {
+    for (e <- tm.getEstaciones) {
       new Thread(new Runnable() {
         override def run(): Unit = {
           try {
             while (!finDeOperacionDiaria()) {
-              val numeroPasajerosEnEstacion = if ((getTm.capacidadSistema - getTm.pasajerosActualesEnSistema) < 0) 0 else new Random().nextInt(getTm.capacidadSistema - getTm.pasajerosActualesEnSistema)
+              val numeroPasajerosEnEstacion = if ((tm.getCapacidadSistema - tm.getPasajerosActualesEnSistema) < 0) 0 else new Random().nextInt(tm.getCapacidadSistema - tm.getPasajerosActualesEnSistema)
               if (numeroPasajerosEnEstacion > 0) {
-                e.pasajerosActual = e.pasajerosActual + numeroPasajerosEnEstacion
-                e.numeroIngresos = e.numeroIngresos + numeroPasajerosEnEstacion
-                getTm.pasajerosActualesEnSistema = numeroPasajerosEnEstacion
+                e.setPasajerosActual(e.getPasajerosActual + numeroPasajerosEnEstacion)
+                e.setNumeroIngresos(e.getNumeroIngresos + numeroPasajerosEnEstacion)
+                tm.setPasajerosActualesEnSistema(numeroPasajerosEnEstacion)
               }
               Thread.sleep(1500)
             }
@@ -70,12 +64,12 @@ class SimulacionTrenes {
       override def run(): Unit = {
         try {
           while (!finDeOperacionDiaria()) {
-            for (e <- getTm.estaciones) {
-              for (t <- getTm.trenes) {
-                if (t.estacionActual != null && t.estacionActual.equals(e) && e.pasajerosActual > 0) {
-                  val numeroPasajerosCabenEnTren:Integer = t.capacidadPasajeros - t.pasajerosActual
-                  t.pasajerosActual = t.pasajerosActual + numeroPasajerosCabenEnTren
-                  e.pasajerosActual = e.pasajerosActual - numeroPasajerosCabenEnTren
+            for (e <- tm.getEstaciones) {
+              for (t <- tm.getTrenes) {
+                if (t.getEstacionActual != null && t.getEstacionActual.equals(e) && e.getPasajerosActual > 0) {
+                  val numeroPasajerosCabenEnTren:Integer = t.getCapacidadDelTren - t.getPasajerosActual
+                  t.setPasajerosActual(t.getPasajerosActual + numeroPasajerosCabenEnTren)
+                  e.setPasajerosActual(e.getPasajerosActual - numeroPasajerosCabenEnTren)
                 }
               }
             }
@@ -93,17 +87,17 @@ class SimulacionTrenes {
       override def run(): Unit = {
         try {
           while (!finDeOperacionDiaria()) {
-            for (t <- getTm.trenes) {
-              if (new Random().nextBoolean() && t.pasajerosActual > 0) {
-                val numeroPasajerosQueBajan = new Random().nextInt(t.pasajerosActual)
-                t.pasajerosActual = t.pasajerosActual - numeroPasajerosQueBajan
-                t.estacionActual.numeroSalidas = t.estacionActual.numeroSalidas + numeroPasajerosQueBajan
-                getTm.pasajerosActualesEnSistema = getTm.pasajerosActualesEnSistema - numeroPasajerosQueBajan
+            for (t <- tm.getTrenes) {
+              if (new Random().nextBoolean() && t.getPasajerosActual > 0) {
+                val numeroPasajerosQueBajan = new Random().nextInt(t.getPasajerosActual)
+                t.setPasajerosActual(t.getPasajerosActual - numeroPasajerosQueBajan)
+                t.getEstacionActual.setNumeroSalidas(t.getEstacionActual.getNumeroSalidas + numeroPasajerosQueBajan)
+                tm.setPasajerosActualesEnSistema(tm.getPasajerosActualesEnSistema - numeroPasajerosQueBajan)
               }
-              if (t.estacionActual != null && t.estacionActual.equals(t.estacionDestino)) {
-                t.estacionActual.numeroSalidas = t.estacionActual.numeroSalidas + t.pasajerosActual
-                getTm.pasajerosActualesEnSistema = getTm.pasajerosActualesEnSistema - t.pasajerosActual
-                t.pasajerosActual = 0
+              if (t.getEstacionActual != null && t.getEstacionActual.equals(t.getEstacionDestino)) {
+                t.getEstacionActual.setNumeroSalidas(t.getEstacionActual.getNumeroSalidas + t.getPasajerosActual)
+                tm.setPasajerosActualesEnSistema(tm.getPasajerosActualesEnSistema - t.getPasajerosActual)
+                t.setPasajerosActual(0)
               }
             }
             Thread.sleep(1500)
@@ -118,9 +112,9 @@ class SimulacionTrenes {
 
   def cargarArchivos: Transmimetro = try {
 
-    setTm(new Transmimetro)
-    getTm.trenes = List[Tren]()
-    getTm.estaciones = List[Estacion]()
+    tm = new Transmimetro
+    tm.setTrenes(List[Tren]())
+    tm.setEstaciones(List[Estacion]())
 
     var archivoEstaciones = new File("/app/public/archivoEstaciones.csv")
     if(!archivoEstaciones.exists()) {
@@ -133,15 +127,15 @@ class SimulacionTrenes {
     while (linea1 != null) {
       val lineaSplit = linea1.split(";")
       val tmp = new Estacion
-      tmp.numeroIngresos = 0
-      tmp.numeroSalidas = 0
-      tmp.nombre = lineaSplit(0)
-      tmp.orden = Integer.valueOf(lineaSplit(1))
-      tmp.pasajerosActual = 0
-      getTm.estaciones = tmp :: getTm.estaciones
+      tmp.setNumeroIngresos(0)
+      tmp.setNumeroSalidas(0)
+      tmp.setNombre(lineaSplit(0))
+      tmp.setOrden(Integer.valueOf(lineaSplit(1)))
+      tmp.setPasajerosActual(0)
+      tm.setEstaciones(tmp :: tm.getEstaciones)
       linea1 = br1.readLine()
     }
-    getTm.estaciones = getTm.estaciones.reverse
+    tm.setEstaciones(tm.getEstaciones.reverse)
     fr1.close()
     br1.close()
 
@@ -156,19 +150,19 @@ class SimulacionTrenes {
     while (linea2 != null) {
       val lineaSplit:Array[String] = linea2.split(";")
       val tmp = new Tren
-      tmp.id = (Integer.valueOf(lineaSplit(0)))
-      tmp.estacionOrigen = buscarEstacion(lineaSplit(1))
-      tmp.horaSalida = lineaSplit(2)
-      tmp.estacionDestino = buscarEstacion(lineaSplit(3))
-      tmp.capacidadPasajeros = Integer.valueOf(lineaSplit(4))
-      tmp.pasajerosActual = 0
-      getTm.trenes = tmp :: getTm.trenes
+      tmp.setId(Integer.valueOf(lineaSplit(0)))
+      tmp.setEstacionOrigen(buscarEstacion(lineaSplit(1)))
+      tmp.setHoraSalida(lineaSplit(2))
+      tmp.setEstacionDestino(buscarEstacion(lineaSplit(3)))
+      tmp.setCapacidadDelTren(Integer.valueOf(lineaSplit(4)))
+      tmp.setPasajerosActual(0)
+      tm.setTrenes(tmp :: tm.getTrenes)
       linea2 = br2.readLine()
     }
-    getTm.trenes = getTm.trenes.reverse
+    tm.setTrenes(tm.getTrenes.reverse)
     fr2.close()
     br2.close()
-    return getTm
+    return tm
   } catch {
     case e: Exception =>
       e.printStackTrace()
@@ -176,8 +170,8 @@ class SimulacionTrenes {
   }
 
   def buscarEstacion(nombre: String): Estacion = synchronized {
-    for (tmp:Estacion <- getTm.estaciones) {
-      if (tmp.nombre.equals(nombre)) {
+    for (tmp:Estacion <- tm.getEstaciones) {
+      if (tmp.getNombre.equals(nombre)) {
         return tmp
       }
     }
@@ -185,8 +179,8 @@ class SimulacionTrenes {
   }
 
   def buscarTren(id: Integer): Tren = synchronized {
-    for (tmp:Tren <- getTm.trenes) {
-      if (tmp.id.equals(id)) {
+    for (tmp:Tren <- tm.getTrenes) {
+      if (tmp.getId.equals(id)) {
         return tmp
       }
     }
@@ -194,10 +188,10 @@ class SimulacionTrenes {
   }
 
   def finDeOperacionDiaria(): Boolean = synchronized {
-    for (t <- getTm.trenes) {
-      if (t.estacionActual == null) {
+    for (t <- tm.getTrenes) {
+      if (t.getEstacionActual == null) {
         return false
-      } else if (!t.estacionActual.equals(t.estacionDestino)) {
+      } else if (!t.getEstacionActual.equals(t.getEstacionDestino)) {
         return false
       }
     }
@@ -205,15 +199,15 @@ class SimulacionTrenes {
   }
 
   def siguienteParada(tren: Tren): Unit = synchronized {
-    if (tren.estacionActual == null) {
-      tren.estacionActual = tren.estacionOrigen
-    } else if (!tren.estacionActual.equals(tren.estacionDestino)) {
-      if (tren.estacionOrigen.orden > tren.estacionDestino.orden) {
-        var i = getTm.estaciones.size - 1
+    if (tren.getEstacionActual == null) {
+      tren.setEstacionActual(tren.getEstacionOrigen)
+    } else if (!tren.getEstacionActual.equals(tren.getEstacionDestino)) {
+      if (tren.getEstacionOrigen.getOrden > tren.getEstacionDestino.getOrden) {
+        var i = tm.getEstaciones.size - 1
         while(i >= 0) {
-          val e:Estacion = getTm.estaciones(i)
-          if (e.orden < tren.estacionActual.orden) {
-            tren.estacionActual = e
+          val e:Estacion = tm.getEstaciones(i)
+          if (e.getOrden < tren.getEstacionActual.getOrden) {
+            tren.setEstacionActual(e)
             i = -1
           } else {
             i = i - 1
@@ -221,11 +215,11 @@ class SimulacionTrenes {
         }
       } else {
         var i = 0
-        while(i < getTm.estaciones.size) {
-          val e:Estacion = getTm.estaciones(i)
-          if (e.orden > tren.estacionActual.orden) {
-            tren.estacionActual = e
-            i = getTm.estaciones.size
+        while(i < tm.getEstaciones.size) {
+          val e:Estacion = tm.getEstaciones(i)
+          if (e.getOrden > tren.getEstacionActual.getOrden) {
+            tren.setEstacionActual(e)
+            i = tm.getEstaciones.size
           } else {
             i = i + 1
           }
@@ -238,13 +232,13 @@ class SimulacionTrenes {
     var info:String = ""
     info = "Informe " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + "<br/><br/>"
     info = info + "<table> <tr> <th>Estación</th> <th>Pasajeros actual</th> <th>Total ingresos</th> <th>Total salidas</th> </tr>"
-    for (tmp <- getTm.estaciones) {
-      info = info + "<tr> <td>"+ tmp.nombre +"</td> <td>"+ tmp.pasajerosActual +"</td> <td>"+ tmp.numeroIngresos +"</td> <td>"+ tmp.numeroSalidas +"</td> </tr>"
+    for (tmp <- tm.getEstaciones) {
+      info = info + "<tr> <td>"+ tmp.getNombre +"</td> <td>"+ tmp.getPasajerosActual +"</td> <td>"+ tmp.getNumeroIngresos +"</td> <td>"+ tmp.getNumeroSalidas +"</td> </tr>"
     }
     info = info + "</table> <br/> <br/>"
     info = info + "<table align=center> <tr> <th>Tren</th> <th>Ubicación actual</th> <th>Numero de pasajeros</th> <th>Estado</th> </tr>"
-    for (tmp <- getTm.trenes) {
-      info = info + "<tr> <td>"+ tmp.id +"</td> <td>"+ tmp.estacionActual.nombre +"</td> <td>"+ tmp.pasajerosActual +"</td> <td>"+ (if (tmp.estacionActual == null) ("Preparado") else (if (tmp.estacionActual == tmp.estacionDestino) ("Finalzó recorrido") else ("En curso") )) +"</td> </tr>"
+    for (tmp <- tm.getTrenes) {
+      info = info + "<tr> <td>"+ tmp.getId +"</td> <td>"+ tmp.getEstacionActual.getNombre +"</td> <td>"+ tmp.getPasajerosActual +"</td> <td>"+ (if (tmp.getEstacionActual == null) ("Preparado") else (if (tmp.getEstacionActual == tmp.getEstacionDestino) ("Finalzó recorrido") else ("En curso") )) +"</td> </tr>"
     }
     info = info + "</table>"
     info
